@@ -316,6 +316,11 @@ graph LR
 
 上記の意味するところは、「りんごが1円値上がりすると支払い額は2.2円増加する」ということである。
 
+
+### 連鎖律
+
+逆伝播の例を計算グラフで表してみる。$y = f(x)$の逆伝播を示す。
+
 ```mermaid
 graph LR
 
@@ -323,6 +328,63 @@ x --> f((f)) --> y
 y ==E==> f =="E ∂y / ∂x"==> x
 ```
 
+ここで、連鎖律(chain rule)とは合成関数の微分に関する次の性質のことである。
 
-### 連鎖律
+> ある関数が合成関数で表される場合、その合成関数の微分は、合成関数を構成するそれぞれの関数の微分の積によって表すことができる。
+
+これを説明するために以下のような合成関数を考える。
+
+$$
+\begin{aligned}
+z &= t^2 \\
+t &= x + y
+\end{aligned}
+$$
+
+このとき、$\frac{\partial z}{\partial x}$は以下のように表すことができる。
+
+$$
+\frac{\partial z}{\partial x} = \frac{\partial z}{\partial t} \frac{\partial t}{\partial x}
+$$
+
+ここで、局所的な微分を求める。
+
+$$
+\begin{aligned}
+\frac{\partial z}{\partial t} &= 2t \\
+\frac{\partial t}{\partial x} &= 1
+\end{aligned}
+$$
+
+ということで連鎖律で求めた$\frac{\partial z}{\partial x}$は以下のように計算できる。
+
+$$
+\frac{\partial z}{\partial x}
+= \frac{\partial z}{\partial t} \frac{\partial t}{\partial x}
+= 2t \cdot 1
+= 2(x+y)
+$$
+
+これを計算グラフで表すと以下のようになる。
+
+```mermaid
+graph LR
+x --> +((+)) --t--> **2((**2)) --> z
+y --> +
+z =="∂z/∂z"==> **2 =="(∂z/∂z) (∂z/∂t)"==> + =="(∂z/∂z) (∂z/∂t) (∂z/∂x)"==> x
+```
+
+これにより、以下のように計算する事ができる。(局所化した上で微分を逆伝播することができる)
+
+```mermaid
+graph LR
+x --> +((+)) --t--> **2((**2)) --> z
+y --> +
+z ==1==> **2 =="1*2t = 2(x+y)"==> + =="2(x+y)*1"==> x
+```
+
+この手法を利用して加算や乗算のレイヤ(層)を構成することができる。
+
+### 活性化関数レイヤ
+
 
