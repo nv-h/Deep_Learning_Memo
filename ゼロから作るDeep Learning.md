@@ -385,6 +385,33 @@ z ==1==> **2 =="1*2t = 2(x+y)"==> + =="2(x+y)*1"==> x
 
 この手法を利用して加算や乗算のレイヤ(層)を構成することができる。
 
+
 ### 活性化関数レイヤ
 
+計算グラフの考え方をニューラルネットワークにも適用する。
+
+
+#### ReLUレイヤ
+
+活性化関数として使われるReLU(Rectified Linear Unit)は以下の式で表された。
+
+$$
+y = \left \{
+    \begin{array}{l}
+        x \quad (x > 0) \\
+        0 \quad (x \leqq 0)
+    \end{array}
+\right.
+$$
+
+ここから、$x$に対する$y$の微分は以下のように求められる。
+
+$$
+\frac{\partial{y}}{\partial{x}} = \left \{
+    \begin{array}{l}
+        1 \quad (x > 0) \\
+        0 \quad (x \leqq 0)
+    \end{array}
+\right.
+$$
 
