@@ -91,6 +91,8 @@ $$
 
 ### 行列の内積
 
+※通常、行列は内積と呼ばないと思うが本書では一貫して内積と記載されている。
+
 ニューラルネットワーウの計算を行う場合、行列演算で行うと楽に表現できるし、Pythonなどでの計算が楽に実装できる。
 例えば以下のようなネットワークを計算する場合を想定する。
 
@@ -414,4 +416,108 @@ $$
     \end{array}
 \right.
 $$
+
+逆伝播は、入力$x$が0より大きければそのまま(上流→下流)、0より小さければストップする。(mermaidのバージョンによるのか、表示が上下逆になってしまう。)
+
+```mermaid
+%% graph LR %% 左右逆になるので↓のRLを使う
+graph RL
+
+
+subgraph "x ＞ 0のとき"
+    input1((input)) -- x --> relu1[relu] -- y --> output1((output))
+    output1 == "∂L/∂y" ==> relu1 == "∂L/∂y" ==> input1
+end
+
+subgraph "x ≦ 0のとき"
+    input2((input)) -- x --> relu2[relu] -- y --> output2((output))
+    output2 == 0 ==> relu2 == "∂L/∂y" ==> input2
+end
+```
+
+#### Sigmoidレイヤ
+
+前述の通り、シグモイド関数は以下である。
+
+$$
+y = \frac{1}{1 + \mathrm{exp} (-x)}
+$$
+
+これを計算グラフで表すと以下のようになる。
+
+```mermaid
+graph LR
+
+input((input)) -- x --> times(("×"))
+    -- -x --> exp((exp)) -- "exp(-x)" --> +((+))
+    -- "1 + exp(-x)" --> /((/))
+    -- "y = 1 / (1 + exp(-x))" --> output((output))
+-1 --> times
+1 --> +
+```
+
+各ステップの逆伝播は以下のようになる。
+
+* **/** $y = \frac{1}{x}$のとき、$\frac{\partial y}{\partial x} = - \frac{1}{x^2} = - y^2$
+* **+** そのまま
+* **exp** $y = \mathrm{exp} (x)$のとき$\frac{\partial y}{\partial x} = \mathrm{exp} (x)$
+* **×** 準伝播時の値をひっくり返して乗算
+
+mermaidの都合で見にくくなってしまったが、逆伝播を計算グラフで表すと以下のようになる。
+
+```mermaid
+graph LR
+
+input((input)) -- x --> times(("×"))
+    -- -x --> exp((exp)) -- "exp(-x)" --> +((+))
+    -- "1 + exp(-x)" --> /((/))
+    -- "y = 1 / (1 + exp(-x))" --> output((output))
+-1 --> times
+1 --> +
+
+
+output == "∂L/∂y" ==> / == "- ∂L/∂y y^2" ==> +
+    == "- ∂L/∂y y^2" ==> exp
+    == "- ∂L/∂y y^2 exp(-x)" ==> times
+    == "∂L/∂y y^2 exp(-x)" ==> input
+```
+
+このシグモイド関数の計算グラフについては、結局入力と出力を表すことができれば良いので以下のようにグループ化して考えることができる。
+
+```mermaid
+graph LR
+
+input((input)) -- x --> sigmoid((sigmoid))
+    -- "y = 1 / (1 + exp(-x))" --> output((output))
+
+output == "∂L/∂y" ==> sigmoid
+    == "∂L/∂y y^2 exp(-x)" ==> input
+```
+
+なお、$\frac{\partial L}{\partial y} y^2 \mathrm{exp} (-x)$は以下のように計算できる。
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial y} y^2 \mathrm{exp} (-x)
+    &= \frac{\partial L}{\partial y} \frac{1}{{(1 + \mathrm{exp} (-x))}^2} \mathrm{exp} (-x) \\
+    &= \frac{\partial L}{\partial y} \frac{1}{1 + \mathrm{exp} (-x)} \frac{\mathrm{exp} (-x)}{{1 + \mathrm{exp} (-x)}} \\
+    &= \frac{\partial L}{\partial y} y(1-y) \\
+\end{aligned}
+$$
+
+これは逆伝播が順伝播の出力だけで計算することができることを示している。
+
+```mermaid
+graph LR
+
+input((input)) -- x --> sigmoid((sigmoid))
+    -- "y = 1 / (1 + exp(-x))" --> output((output))
+
+output == "∂L/∂y" ==> sigmoid
+    == "∂L/∂y y (1 - y)" ==> input
+```
+
+
+### Affine / Softmax レイヤ
+
 
