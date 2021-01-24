@@ -122,3 +122,98 @@ jupytr notebook
 
 入力部分に適当に`print("Hello world!")`と打って実行(▶ボタンを押す)してみると、Hello world!が表示されるはず。
 
+
+#### 2.3.2 データを手に入れる
+
+本では、Pythonスクリプトで元データを手に入れているが、bashなどの方が親しみやすいのでそのようにする。
+
+なお、今回はなるべくJupyterを使わず素のPythonで実行しようと思っている。
+これは依存性と再利用性を意識しているのと、GUIをポチポチするのが性に合わないためである。
+Gppgle Colablatoryなどを使用する予定がある場合はJupyterで実行するのが良いと思う。
+
+以下コマンドでデータをダウンロードする。
+
+```sh
+DOWNLOAD_ROOT="https://raw.githubusercontent.com/ageron/handson-ml2/master/"
+HOUSING_PATH="datasets/housing"
+HOUSING_URL="${DOWNLOAD_ROOT}${HOUSING_PATH}/housing.tgz"
+
+mkdir -p $HOUSING_PATH
+wget $HOUSING_URL -O "${HOUSING_PATH}/housing.tgz"
+tar xvf "${HOUSING_PATH}/housing.tgz" -C $HOUSING_PATH
+```
+
+#### 2.3.2 データを見てみる
+
+pandasで読んでみる。
+
+```python
+import pandas as pd
+
+csv_path = 'datasets/housing/housing.csv'
+df = pd.read_csv(csv_path)
+
+# 最初の5行を確認
+print(df.head())
+#    longitude  latitude  housing_median_age  total_rooms  ...  households  median_income  median_house_value  ocean_proximity
+# 0    -122.23     37.88                41.0        880.0  ...       126.0         8.3252            452600.0         NEAR BAY
+# 1    -122.22     37.86                21.0       7099.0  ...      1138.0         8.3014            358500.0         NEAR BAY
+# 2    -122.24     37.85                52.0       1467.0  ...       177.0         7.2574            352100.0         NEAR BAY
+# 3    -122.25     37.85                52.0       1274.0  ...       219.0         5.6431            341300.0         NEAR BAY
+# 4    -122.25     37.85                52.0       1627.0  ...       259.0         3.8462            342200.0         NEAR BAY
+# [5 rows x 10 columns]
+
+# 情報を表示(総行数や属性、nullでない数など)
+print(df.info())
+# <class 'pandas.core.frame.DataFrame'>
+# RangeIndex: 20640 entries, 0 to 20639
+# Data columns (total 10 columns):
+#  #   Column              Non-Null Count  Dtype  
+# ---  ------              --------------  -----  
+#  0   longitude           20640 non-null  float64
+#  1   latitude            20640 non-null  float64
+#  2   housing_median_age  20640 non-null  float64
+#  3   total_rooms         20640 non-null  float64
+#  4   total_bedrooms      20433 non-null  float64
+#  5   population          20640 non-null  float64
+#  6   households          20640 non-null  float64
+#  7   median_income       20640 non-null  float64
+#  8   median_house_value  20640 non-null  float64
+#  9   ocean_proximity     20640 non-null  object 
+# dtypes: float64(9), object(1)
+# memory usage: 1.6+ MB
+# None
+
+# ocean_proximity なるものがオブジェクトだと言っているので見てみる。
+print(df['ocean_proximity'].value_counts())
+# <1H OCEAN     9136
+# INLAND        6551
+# NEAR OCEAN    2658
+# NEAR BAY      2290
+# ISLAND           5
+# Name: ocean_proximity, dtype: int64
+
+# 統計情報
+print(df.describe())
+# Name: ocean_proximity, dtype: int64
+#           longitude      latitude  housing_median_age  ...    households  median_income  median_house_value
+# count  20640.000000  20640.000000        20640.000000  ...  20640.000000   20640.000000        20640.000000
+# mean    -119.569704     35.631861           28.639486  ...    499.539680       3.870671       206855.816909
+# std        2.003532      2.135952           12.585558  ...    382.329753       1.899822       115395.615874
+# min     -124.350000     32.540000            1.000000  ...      1.000000       0.499900        14999.000000
+# 25%     -121.800000     33.930000           18.000000  ...    280.000000       2.563400       119600.000000
+# 50%     -118.490000     34.260000           29.000000  ...    409.000000       3.534800       179700.000000
+# 75%     -118.010000     37.710000           37.000000  ...    605.000000       4.743250       264725.000000
+# max     -114.310000     41.950000           52.000000  ...   6082.000000      15.000100       500001.000000
+# [8 rows x 9 columns]
+
+# グラフ表示
+import matplotlib.pyplot as plt
+housing.hist() # matplotlibに依存
+plt.show()
+```
+
+`hist`メソッドでの表示は以下のようになる。
+
+![](images/2.3.3_housing_hist.png)
+
